@@ -10,6 +10,7 @@ class Ship:
         self.decks = decks
         self.is_vertical = is_vertical
         self.points = []
+        self.damaged = []
         for i in range(decks):
             if is_vertical:
                 if x + i > 5:
@@ -19,6 +20,13 @@ class Ship:
                 self.points.append((x, y + i))
                 if y + i > 5:
                     raise ShipCreationError(f'Unable to create HORIZONTAL {decks}-decks ship with y = {y}')
+
+    def __repr__(self):
+        direction = 'vertical ' if self.is_vertical else 'horizontal '
+        if self.decks == 1:
+            direction = ''
+        damaged = f'\ndamaged: {self.damaged}' if self.is_damaged else ''
+        return f'{self.decks}-decks {direction}ship: {self.points}' + damaged
 
     @property
     def space_around(self):
@@ -30,13 +38,16 @@ class Ship:
         space -= set(self.points)
         return list(sorted(space))
 
-    def __repr__(self):
-        direction = 'vertical ' if self.is_vertical else 'horizontal '
-        if self.decks == 1:
-            direction = ''
-        return f'{self.decks}-decks {direction}ship: {self.points}'
+    def hit(self, x, y):
+        if (x, y) in self.points and (x, y) not in self.damaged:
+            self.damaged.append((x, y))
+            return True
+        return False
 
+    @property
+    def is_damaged(self):
+        return len(self.damaged) > 0
 
-if __name__ == '__main__':
-    deck_3 = Ship(5, 5, 1, is_vertical=True)
-    print(deck_3)
+    @property
+    def is_destroyed(self):
+        return len(self.damaged) == self.decks
